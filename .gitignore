@@ -1,0 +1,42 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Environment files
+.env
+!.env.example
+
+# Node
+node_modules/
+dist/
+.parcel-cache/
+
+# Build artifacts
+*.egg-info/
+build/
