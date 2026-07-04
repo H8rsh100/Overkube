@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# OVER-PROVISIONED SERVICE 2 — user-service
+# Requests 4x what it actually needs.
+# Typical real usage: ~30m CPU, ~48Mi mem
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: overkube
+  labels:
+    app: user-service
+    tier: backend
+    waste-profile: over-provisioned
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+        tier: backend
+        waste-profile: over-provisioned
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=user-service", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: user-service
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "192Mi"
+            limits:
+              cpu: "400m"
+              memory: "384Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: overkube
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

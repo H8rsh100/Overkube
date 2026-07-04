@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# SPIKY SERVICE 2 — report-generator
+# Daily-cycle sine-wave pattern — high during business
+# hours, near-zero overnight. Hard to right-size.
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-generator
+  namespace: overkube
+  labels:
+    app: report-generator
+    tier: backend
+    waste-profile: spiky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-generator
+  template:
+    metadata:
+      labels:
+        app: report-generator
+        tier: backend
+        waste-profile: spiky
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=report-generator", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: report-generator
+          resources:
+            requests:
+              cpu: "80m"
+              memory: "96Mi"
+            limits:
+              cpu: "250m"
+              memory: "200Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-generator
+  namespace: overkube
+spec:
+  selector:
+    app: report-generator
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

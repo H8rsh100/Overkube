@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# RIGHT-SIZED SERVICE 2 — notification-service (control group)
+# Requests match actual usage closely.
+# Typical real usage: ~30m CPU, ~48Mi mem
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: overkube
+  labels:
+    app: notification-service
+    tier: backend
+    waste-profile: right-sized
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+        tier: backend
+        waste-profile: right-sized
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=notification-service", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: notification-service
+          resources:
+            requests:
+              cpu: "30m"
+              memory: "48Mi"
+            limits:
+              cpu: "50m"
+              memory: "72Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: overkube
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

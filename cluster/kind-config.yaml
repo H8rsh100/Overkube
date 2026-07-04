@@ -1,0 +1,44 @@
+# Overkube — kind cluster configuration
+# 1 control-plane + 2 worker nodes, port mappings for local dev
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: overkube
+nodes:
+  # --- Control Plane ---
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "role=control-plane"
+    extraPortMappings:
+      # NodePort range mapped to host for local access
+      - containerPort: 30000
+        hostPort: 30000
+        protocol: TCP
+      - containerPort: 30001
+        hostPort: 30001
+        protocol: TCP
+      # Prometheus UI access
+      - containerPort: 30090
+        hostPort: 30090
+        protocol: TCP
+
+  # --- Worker 1 ---
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "role=worker"
+
+  # --- Worker 2 ---
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "role=worker"

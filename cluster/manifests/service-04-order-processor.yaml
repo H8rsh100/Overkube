@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# UNDER-PROVISIONED SERVICE 1 — order-processor
+# Requests only 50% of actual need → will show throttling
+# Typical real usage: ~120m CPU, ~180Mi mem
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-processor
+  namespace: overkube
+  labels:
+    app: order-processor
+    tier: backend
+    waste-profile: under-provisioned
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-processor
+  template:
+    metadata:
+      labels:
+        app: order-processor
+        tier: backend
+        waste-profile: under-provisioned
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=order-processor", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: order-processor
+          resources:
+            requests:
+              cpu: "60m"
+              memory: "90Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-processor
+  namespace: overkube
+spec:
+  selector:
+    app: order-processor
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# OVER-PROVISIONED SERVICE 3 — inventory-service
+# Requests 4x what it actually needs.
+# Typical real usage: ~40m CPU, ~50Mi mem
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: overkube
+  labels:
+    app: inventory-service
+    tier: backend
+    waste-profile: over-provisioned
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+        tier: backend
+        waste-profile: over-provisioned
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=inventory-service", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: inventory-service
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: overkube
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

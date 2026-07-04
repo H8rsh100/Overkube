@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────
+# SPIKY SERVICE 1 — recommendation-engine
+# Bursty traffic pattern — long idle periods punctuated
+# by intense CPU spikes (e.g. batch recommendation runs).
+# ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-engine
+  namespace: overkube
+  labels:
+    app: recommendation-engine
+    tier: backend
+    waste-profile: spiky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-engine
+  template:
+    metadata:
+      labels:
+        app: recommendation-engine
+        tier: backend
+        waste-profile: spiky
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo:latest
+          args: ["-text=recommendation-engine", "-listen=:8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVICE_NAME
+              value: recommendation-engine
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-engine
+  namespace: overkube
+spec:
+  selector:
+    app: recommendation-engine
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
