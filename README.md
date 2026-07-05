@@ -9,6 +9,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg)](https://python.org)
 [![K8s](https://img.shields.io/badge/Kubernetes-1.28+-326CE5.svg)](https://kubernetes.io)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg)](https://fastapi.tiangolo.com)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00.svg)](https://sqlalchemy.org)
 
 </div>
 
@@ -212,10 +214,40 @@ overkube/
 
 ---
 
+## 5. Run the Backend (Day 2+)
+
+```bash
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Copy env config
+cp backend/.env.example backend/.env
+
+# Seed the database with 7 days of synthetic historical data
+python -m backend.app.backfill
+
+# Start the API server
+cd backend && uvicorn app.main:app --reload --port 8000
+```
+
+API available at `http://localhost:8000` — docs at `http://localhost:8000/docs`
+
+**Or with Docker Compose:**
+
+```bash
+# SQLite mode (no extra setup)
+docker compose up
+
+# Postgres mode
+docker compose --profile postgres up
+```
+
+---
+
 ## 📋 Roadmap
 
 - [x] **Day 1** — Cluster setup, 10 service manifests, traffic simulator
-- [ ] **Day 2** — Metrics collection pipeline + synthetic historical data
+- [x] **Day 2** — Metrics collection pipeline + synthetic historical data
 - [ ] **Day 3** — Recommendation engine (P90/P99 + confidence scoring)
 - [ ] **Day 4** — FastAPI backend with full REST API
 - [ ] **Day 5** — React dashboard with data visualization
