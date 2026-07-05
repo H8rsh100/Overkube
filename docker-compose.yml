@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Overkube — docker-compose.yml
+#
+# Profiles:
+#   (default)  — SQLite mode: just the backend, no extra services
+#   postgres   — Postgres mode: backend + DB container
+#
+# Usage:
+#   # SQLite (simplest, no Postgres needed):
+#   docker compose up
+#
+#   # Postgres (closer to production):
+#   docker compose --profile postgres up
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Overkube Backend (FastAPI) ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: overkube-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # SQLite database persistence (ignored when using Postgres)
+      - overkube_data:/data
+      # Mount kubeconfig so the collector can reach the kind cluster
+      - "${KUBECONFIG:-${HOME}/.kube/config}:/home/overkube/.kube/config:ro"
+    environment:
+      DATABASE_URL: "${DATABASE_URL:-sqlite:////data/overkube.db}"
+      KUBE_CONTEXT: "${KUBE_CONTEXT:-kind-overkube}"
+      OVERKUBE_NAMESPACE: "${OVERKUBE_NAMESPACE:-overkube}"
+      COLLECTOR_INTERVAL: "${COLLECTOR_INTERVAL:-30}"
+      PRICE_CPU_PER_VCPU_HOUR: "${PRICE_CPU_PER_VCPU_HOUR:-0.04}"
+      PRICE_MEM_PER_GB_HOUR: "${PRICE_MEM_PER_GB_HOUR:-0.005}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      APP_ENV: "${APP_ENV:-production}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:5173}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - overkube_net
+
+  # ── Postgres (optional — activate with --profile postgres) ─────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: overkube-postgres
+    profiles: ["postgres"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: overkube
+      POSTGRES_PASSWORD: overkube
+      POSTGRES_DB: overkube
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U overkube -d overkube"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - overkube_net
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  overkube_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+# ── Networks ───────────────────────────────────────────────────────────────────
+networks:
+  overkube_net:
+    driver: bridge
