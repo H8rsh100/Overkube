@@ -13,8 +13,8 @@ Key Logic:
    - Enforces a minimum safety buffer of 32 MiB over the recommended Memory request,
      since memory OOMs cause pod death, whereas CPU throttling just slows down execution.
 5. confidence_score (0-100) calculated as a weighted average of:
-   - Sample count (40%): target of 1008 samples (3.5 days of 5-min intervals) for full score.
-   - Coefficient of Variation / predictability (40%): lower CV (standard deviation / mean)
+   - Sample count (30%): target of 1008 samples (3.5 days of 5-min intervals) for full score.
+   - Coefficient of Variation / predictability (50%): lower CV (standard deviation / mean)
      leads to higher confidence.
    - Recency (20%): decays if the last seen metric is old.
 6. waste_status classification:
@@ -107,8 +107,8 @@ def calculate_confidence(
         # Linear decay from 100 (at 1 hour) to 0 (at 7 days)
         recency_score = 100.0 - ((age_seconds - one_hour) / (seven_days - one_hour)) * 100.0
 
-    # Weighted combination
-    final_score = (count_score * 0.40) + (predictability_score * 0.40) + (recency_score * 0.20)
+    # Weighted combination: predictability (volatility) is key for cost optimization sizing
+    final_score = (count_score * 0.30) + (predictability_score * 0.50) + (recency_score * 0.20)
     final_score = max(0.0, min(100.0, final_score))
     final_score_rounded = int(round(final_score))
 
@@ -182,19 +182,6 @@ def get_recommendation(service_name: str, lookback_days: int = 7, db_session: Op
 
         # 2. Query historical usage samples in the lookback window
         cutoff_time = time.time() - (lookback_days * 86400)
-        samples = (
-            db.query(UsageSample)
-            .filter(
-                and_(
-                    UsageSample.service_name == service_name,
-                    UsageSample.timestamp >= cutoff_time
-                )
-            )
-            .order_back_by(UsageSample.timestamp.desc() if hasattr(UsageSample, 'timestamp') else None)
-            .all()
-        )
-
-        # Fallback to order by in SQLAlchemy standard format
         samples = (
             db.query(UsageSample)
             .filter(UsageSample.service_name == service_name)
