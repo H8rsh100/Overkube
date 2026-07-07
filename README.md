@@ -249,7 +249,7 @@ docker compose --profile postgres up
 - [x] **Day 1** — Cluster setup, 10 service manifests, traffic simulator
 - [x] **Day 2** — Metrics collection pipeline + synthetic historical data
 - [x] **Day 3** — Recommendation engine (P90/P99 + confidence scoring)
-- [ ] **Day 4** — FastAPI backend with full REST API
+- [x] **Day 4** — FastAPI backend with full REST API
 - [ ] **Day 5** — React dashboard with data visualization
 - [ ] **Day 6** — Auto-PR generator + polish
 - [ ] **Day 7** — README, demo recording, deployment
