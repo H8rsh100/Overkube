@@ -91,10 +91,10 @@ app.add_middleware(
 # Imported here so they register their routes on the app instance.
 # Routers are defined in app/routers/ (built in Day 4).
 
-# from app.routers import services, recommendations, waste_report
-# app.include_router(services.router,        prefix="/services",    tags=["Services"])
-# app.include_router(recommendations.router, prefix="/services",    tags=["Recommendations"])
-# app.include_router(waste_report.router,    prefix="/waste-report", tags=["Waste Report"])
+from app.routers import services, recommendations, waste_report
+app.include_router(services.router,        prefix="/services",    tags=["Services"])
+app.include_router(recommendations.router, prefix="/services",    tags=["Recommendations"])
+app.include_router(waste_report.router,    prefix="/waste-report", tags=["Waste Report"])
 
 # ── Core Endpoints ────────────────────────────────────────────────────────────
 
