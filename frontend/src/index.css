@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Colour tokens ─────────────────────────────────────── */
+  --color-bg:        #0a0d12;
+  --color-surface:   #111827;
+  --color-border:    #1f2937;
+  --color-muted:     #374151;
+  --color-text:      #f9fafb;
+  --color-subtle:    #9ca3af;
+  --color-accent:    #38bdf8;   /* sky-400 – single accent colour */
+  --color-over:      #f97316;   /* orange  – over-provisioned    */
+  --color-under:     #ef4444;   /* red     – under-provisioned   */
+  --color-optimal:   #22c55e;   /* green   – right-sized         */
+
+  /* ── Typography ────────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Global resets */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-muted); border-radius: 3px; }
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    var(--color-muted)   50%,
+    var(--color-surface) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* Count-up number animation */
+@keyframes countup { from { opacity: 0; transform: translateY(8px); } }
+.animate-countup { animation: countup 0.6s ease-out both; }
