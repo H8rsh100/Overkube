@@ -34,9 +34,12 @@ class Settings(BaseSettings):
     price_cpu_per_vcpu_hour: float = 0.04   # $ per vCPU-hour
     price_mem_per_gb_hour: float = 0.005    # $ per GB-hour
 
-    # ── GitHub ────────────────────────────────────────────────────────────────
-    github_token: str = ""
-    github_gitops_repo: str = ""
+    # ── GitHub PR automation ──────────────────────────────────────────────────
+    github_token: str = ""            # PAT with repo scope
+    github_owner: str = ""            # GitHub username or org
+    github_repo:  str = ""            # GitOps manifests repository name
+    github_manifests_dir: str = "manifests"  # Path inside repo
+    github_dry_run: bool = True       # True = never actually open PRs
 
     # ── App ───────────────────────────────────────────────────────────────────
     app_env: str = "development"

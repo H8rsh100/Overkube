@@ -42,29 +42,43 @@ def get_service_recommendation(
     return rec
 
 
-@router.post("/{name}/recommendation/apply", response_model=ApplyRecommendationResponse, summary="Apply resource recommendation")
+@router.post("/{name}/recommendation/apply", response_model=ApplyRecommendationResponse, summary="Apply resource recommendation via GitHub PR")
 def apply_service_recommendation(
     name: str,
     payload: ApplyRecommendationRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Triggers the GitOps pipeline to apply the recommended resource changes.
-    Currently acts as a stub logging the request and returning dry-run metadata.
-    Will be wired up to open GitHub Pull Requests in Day 6.
+    Triggers the GitOps pipeline: computes the recommendation, then calls
+    the GitHub PR engine to open a pull request patching the resource manifest.
+
+    Gracefully degrades to dry-run mode when GITHUB_TOKEN is not configured
+    or GITHUB_DRY_RUN=true — always returns a valid response, never 500s.
     """
     # Verify the service exists
     svc = db.query(Service).filter(Service.service_name == name).first()
     if not svc:
         raise HTTPException(status_code=404, detail=f"Service '{name}' not found.")
 
-    logger.info(f"Applying recommendation for service '{name}'. Reason: {payload.reason or 'Not specified'}")
+    # Fetch the recommendation for this service
+    rec = get_recommendation(name, lookback_days=7, db_session=db)
+    if "error" in rec:
+        raise HTTPException(status_code=500, detail=rec["error"])
 
-    # For now, return a successful stub response
+    logger.info("Applying recommendation for '%s' (status=%s). Reason: %s",
+                name, rec.get("status"), payload.reason or "not specified")
+
+    # Call the GitHub PR engine
+    from app.github_pr import open_right_sizing_pr
+    result = open_right_sizing_pr(name, rec)
+
+    status = "applied" if not result["dry_run"] else "dry_run"
+
     return ApplyRecommendationResponse(
         service_name=name,
-        status="dry_run",
+        status=status,
         applied_at=time.time(),
-        pull_request_url=None,
-        message=f"Recommendation for service '{name}' received successfully. (GitOps pipeline stubbed until Day 6)"
+        pull_request_url=result.get("pr_url"),
+        message=result["message"],
     )
+
