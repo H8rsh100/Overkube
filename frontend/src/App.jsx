@@ -8,6 +8,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { getServices, getWasteReport } from './api/client'
 import WasteHeroCard from './components/WasteHeroCard'
 import ServiceGrid    from './components/ServiceGrid'
+import InfoModal      from './components/InfoModal'
 
 function useInterval(cb, ms) {
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function App() {
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [showInfo, setShowInfo]   = useState(false)
 
   const fetchAll = useCallback(async () => {
     try {
@@ -65,6 +67,12 @@ export default function App() {
                 </time>
               </span>
             )}
+            <button
+              onClick={() => setShowInfo(true)}
+              className="px-2.5 py-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] font-medium hover:bg-[var(--color-muted)] transition-colors"
+            >
+              How it works
+            </button>
             <button
               onClick={fetchAll}
               className="p-1.5 rounded-lg hover:bg-[var(--color-surface)] transition-colors"
@@ -112,6 +120,9 @@ export default function App() {
           </a>
         </footer>
       </main>
+
+      {/* Info Modal */}
+      <InfoModal open={showInfo} onClose={() => setShowInfo(false)} />
     </div>
   )
 }
