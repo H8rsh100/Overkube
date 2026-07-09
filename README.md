@@ -251,7 +251,7 @@ docker compose --profile postgres up
 - [x] **Day 3** — Recommendation engine (P90/P99 + confidence scoring)
 - [x] **Day 4** — FastAPI backend with full REST API
 - [x] **Day 5** — React dashboard with data visualization
-- [ ] **Day 6** — Auto-PR generator + polish
+- [x] **Day 6** — Auto-PR generator + polish
 - [ ] **Day 7** — README, demo recording, deployment
 
 ---
