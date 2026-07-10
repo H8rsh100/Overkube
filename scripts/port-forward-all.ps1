@@ -55,7 +55,8 @@ try {
     while ($true) { Start-Sleep -Seconds 5 }
 }
 finally {
-    Write-Host "`n⏹  Stopping all port-forwards..." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Stopping all port-forwards..." -ForegroundColor Red
     $jobs | Stop-Job -PassThru | Remove-Job
-    Write-Host "   Done." -ForegroundColor DarkGray
+    Write-Host "Done." -ForegroundColor DarkGray
 }
