@@ -252,7 +252,7 @@ docker compose --profile postgres up
 - [x] **Day 4** — FastAPI backend with full REST API
 - [x] **Day 5** — React dashboard with data visualization
 - [x] **Day 6** — Auto-PR generator + polish
-- [ ] **Day 7** — README, demo recording, deployment
+- [x] **Day 7** — README, demo recording, deployment
 
 ---
 
